@@ -1,0 +1,27 @@
+package com.coraho.ecommerceservice.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
+@Table(name = "authorities")
+public class Authority {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long Id;
+
+    @Column(length = 50, unique = true, nullable = false)
+    private String name;
+
+    @ManyToMany(mappedBy = "group_authorities")
+    private Set<Group> groups = new HashSet<>();
+}
