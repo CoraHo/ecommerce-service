@@ -20,7 +20,7 @@ public class Authority {
     private Long Id;
 
     @Column(length = 50, unique = true, nullable = false)
-    private String name;
+    private String name; // e.g. "READ_PRIVILEGE", "WRITE_PRIVILEGE"
 
     @ManyToMany(mappedBy = "group_authorities")
     private Set<Group> groups = new HashSet<>();

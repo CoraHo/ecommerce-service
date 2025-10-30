@@ -20,7 +20,7 @@ public class Group {
     private Long id;
 
     @Column(length = 50, unique = true, nullable = false)
-    private String groupName;
+    private String name; // e.g. "ADMIN", "USER"
 
     @ManyToMany
     @JoinTable(
