@@ -26,24 +26,32 @@ public class GroupService {
         return groupRepository.save(Group.builder().name(name).build());
     }
 
+    public Group findByName(String name) {
+        return groupRepository.findByName(name).orElseThrow(
+                () -> new RuntimeException("Group not found by name: " + name)
+        );
+    }
+
     @Transactional
     public Group addAuthoritiesToGroup(String groupName, String[] authorities) {
-        Group group = groupRepository.findByName(groupName).orElseThrow(
-                () -> new RuntimeException("Group not found by name: " + groupName)
-        );
+        Group group = findByName(groupName);
+
         for (String authorityName : authorities) {
-            Authority authority = authorityRepository.findByName(authorityName).orElseGet(() -> {
-                        Authority customerAuthority = Authority.builder().name(authorityName).build();
-                        authorityRepository.save(customerAuthority);
-                        return customerAuthority;
-                    }
+            // add existing authorities to group
+            Authority authority = authorityRepository.findByName(authorityName).orElseThrow(
+                    () -> new RuntimeException("Authority not found with the name: " + authorityName)
             );
             group.getAuthorities().add(authority);
             authority.getGroups().add(group);
-            groupRepository.save(group);
             authorityRepository.save(authority);
         }
+        groupRepository.save(group);
         return group;
+    }
+
+    @Transactional
+    public Group updateGroup(Group group) {
+        return groupRepository.save(group);
     }
 
 }

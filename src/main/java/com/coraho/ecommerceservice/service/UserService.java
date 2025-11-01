@@ -16,13 +16,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final GroupRepository groupRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       GroupRepository groupRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.groupRepository = groupRepository;
     }
 
 
@@ -38,33 +35,29 @@ public class UserService {
         return user;
     }
 
+    public void checkUserExistence(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("This username already existed: " + username);
+        }
+    }
+
     @Transactional
     public User registerUser(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) {
             throw new IllegalArgumentException("Username and Password are required");
         }
-        if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("This username already existed: " + username);
-        }
+        checkUserExistence(username);
 
         /* create a User object with username and encode password, then add user to database */
-        return User.builder().username(username)
+        User user = User.builder().username(username)
                 .password(passwordEncoder.encode(password))
                 .enabled(true).build();
+
+        return userRepository.save(user);
     }
 
     @Transactional
-    public User addUserToGroup(String username, String groupName) {
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found by username: " + username)
-        );
-        Group group = groupRepository.findByName(groupName).orElseThrow(
-                () -> new RuntimeException("Group not found by name: " + groupName)
-        );
-        user.getGroups().add(group);
-        group.getUsers().add(user);
-        userRepository.save(user);
-        groupRepository.save(group);
-        return user;
+    public User updateUser(User user) {
+        return userRepository.save(user);
     }
 }
