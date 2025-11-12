@@ -18,6 +18,10 @@ public class GroupService {
         this.authorityRepository = authorityRepository;
     }
 
+    public boolean checkGroupExistence(String name) {
+        return groupRepository.existsByName(name);
+    }
+
     @Transactional
     public Group addGroup(String name){
         if (groupRepository.existsByName(name)) {

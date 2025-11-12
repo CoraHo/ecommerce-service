@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "groups")
+@Table(name = "role_groups")
 public class Group {
 
     @Id
@@ -22,14 +22,15 @@ public class Group {
     @Column(length = 50, unique = true, nullable = false)
     private String name; // e.g. "ADMIN", "USER"
 
+    @ManyToMany(mappedBy = "groups")
+    private Set<User> users = new HashSet<>();
+
+
     @ManyToMany
     @JoinTable(
             name = "group_authorities",
-            joinColumns = @JoinColumn(name="user_group_id"),
+            joinColumns = @JoinColumn(name="group_id"),
             inverseJoinColumns = @JoinColumn(name = "authorities_id")
     )
     private Set<Authority> authorities = new HashSet<>();
-
-    @ManyToMany(mappedBy = "group_members")
-    private Set<User> users = new HashSet<>();
 }

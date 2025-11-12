@@ -27,8 +27,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/products/**").hasAuthority("CUSTOMER")
+                        .requestMatchers("/api/products/**").hasAuthority("ADMIN_PRIVILEGE")
                         .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults());
         return http.build();

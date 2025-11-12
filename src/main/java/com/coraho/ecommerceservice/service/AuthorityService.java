@@ -19,4 +19,8 @@ public class AuthorityService {
         Authority authority = Authority.builder().name(name).build();
         return authorityRepository.save(authority);
     }
+
+    public boolean checkAuthorityExistence(String name) {
+        return authorityRepository.existsByName(name);
+    }
 }

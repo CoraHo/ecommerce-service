@@ -35,10 +35,8 @@ public class UserService {
         return user;
     }
 
-    public void checkUserExistence(String username) {
-        if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("This username already existed: " + username);
-        }
+    public boolean checkUserExistence(String username) {
+        return userRepository.existsByUsername(username);
     }
 
     @Transactional
@@ -46,7 +44,7 @@ public class UserService {
         if (username.isEmpty() || password.isEmpty()) {
             throw new IllegalArgumentException("Username and Password are required");
         }
-        checkUserExistence(username);
+        if (checkUserExistence(username)) throw new IllegalArgumentException("This username already existed: " + username);
 
         /* create a User object with username and encode password, then add user to database */
         User user = User.builder().username(username)
