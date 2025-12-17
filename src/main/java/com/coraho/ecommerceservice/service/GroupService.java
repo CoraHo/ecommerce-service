@@ -1,7 +1,7 @@
 package com.coraho.ecommerceservice.service;
 
-import com.coraho.ecommerceservice.entity.Authority;
-import com.coraho.ecommerceservice.entity.Group;
+import com.coraho.ecommerceservice.entity.Permission;
+import com.coraho.ecommerceservice.entity.Role;
 import com.coraho.ecommerceservice.repository.AuthorityRepository;
 import com.coraho.ecommerceservice.repository.GroupRepository;
 import jakarta.transaction.Transactional;
@@ -23,39 +23,39 @@ public class GroupService {
     }
 
     @Transactional
-    public Group addGroup(String name){
+    public Role addGroup(String name){
         if (groupRepository.existsByName(name)) {
             throw new IllegalArgumentException("Group already exists with name: " + name);
         }
-        return groupRepository.save(Group.builder().name(name).build());
+        return groupRepository.save(Role.builder().name(name).build());
     }
 
-    public Group findByName(String name) {
+    public Role findByName(String name) {
         return groupRepository.findByName(name).orElseThrow(
                 () -> new RuntimeException("Group not found by name: " + name)
         );
     }
 
     @Transactional
-    public Group addAuthoritiesToGroup(String groupName, String[] authorities) {
-        Group group = findByName(groupName);
+    public Role addAuthoritiesToGroup(String groupName, String[] authorities) {
+        Role role = findByName(groupName);
 
         for (String authorityName : authorities) {
             // add existing authorities to group
-            Authority authority = authorityRepository.findByName(authorityName).orElseThrow(
+            Permission permission = authorityRepository.findByName(authorityName).orElseThrow(
                     () -> new RuntimeException("Authority not found with the name: " + authorityName)
             );
-            group.getAuthorities().add(authority);
-            authority.getGroups().add(group);
-            authorityRepository.save(authority);
+            role.getPermissions().add(permission);
+            permission.getRoles().add(role);
+            authorityRepository.save(permission);
         }
-        groupRepository.save(group);
-        return group;
+        groupRepository.save(role);
+        return role;
     }
 
     @Transactional
-    public Group updateGroup(Group group) {
-        return groupRepository.save(group);
+    public Role updateGroup(Role role) {
+        return groupRepository.save(role);
     }
 
 }
