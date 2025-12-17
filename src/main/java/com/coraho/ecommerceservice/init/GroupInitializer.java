@@ -1,6 +1,5 @@
 package com.coraho.ecommerceservice.init;
 
-import com.coraho.ecommerceservice.entity.Group;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.service.AuthorityService;
 import com.coraho.ecommerceservice.service.GroupService;
@@ -10,8 +9,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -48,7 +45,7 @@ public class GroupInitializer {
 
             // add the default admin user to ADMIN group
             User user = userManagementService.addUserToGroup("admin", "ADMIN");
-            System.out.println(user.getUsername() + ", " + user.getPassword());
+            System.out.println(user.getUsername() + ", " + user.getPasswordHash());
         }
     }
 }

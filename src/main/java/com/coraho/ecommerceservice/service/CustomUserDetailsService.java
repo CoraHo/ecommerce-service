@@ -3,7 +3,6 @@ package com.coraho.ecommerceservice.service;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,15 +24,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username).orElseThrow(
                 () -> new UsernameNotFoundException("User not found by username: " + username));
 
-        List<SimpleGrantedAuthority> authorities = user.getGroups().stream()
-                .flatMap(group -> group.getAuthorities().stream())
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .flatMap(group -> group.getPermissions().stream())
                 .map(authority -> new SimpleGrantedAuthority(authority.getName()))
                 .toList();
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
+                user.getPasswordHash(),
+                user.getIsActive(),
                 true, true, true,
                 authorities
         );

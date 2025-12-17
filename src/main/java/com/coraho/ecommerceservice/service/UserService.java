@@ -1,8 +1,6 @@
 package com.coraho.ecommerceservice.service;
 
-import com.coraho.ecommerceservice.entity.Group;
 import com.coraho.ecommerceservice.entity.User;
-import com.coraho.ecommerceservice.repository.GroupRepository;
 import com.coraho.ecommerceservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,8 +46,8 @@ public class UserService {
 
         /* create a User object with username and encode password, then add user to database */
         User user = User.builder().username(username)
-                .password(passwordEncoder.encode(password))
-                .enabled(true).build();
+                .passwordHash(passwordEncoder.encode(password))
+                .isActive(true).build();
 
         return userRepository.save(user);
     }

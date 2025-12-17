@@ -1,14 +1,9 @@
 package com.coraho.ecommerceservice.service;
 
-import com.coraho.ecommerceservice.DTO.UserDTO;
-import com.coraho.ecommerceservice.entity.Authority;
-import com.coraho.ecommerceservice.entity.Group;
+import com.coraho.ecommerceservice.entity.Role;
 import com.coraho.ecommerceservice.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Service
 @Transactional
@@ -24,11 +19,11 @@ public class UserManagementService {
 
     public User addUserToGroup(String username, String groupName) {
         User user = userService.findUserByUsername(username);
-        Group group = groupService.findByName(groupName);
-        user.getGroups().add(group);
-        group.getUsers().add(user);
+        Role role = groupService.findByName(groupName);
+        user.getRoles().add(role);
+        role.getUsers().add(user);
         userService.updateUser(user);
-        groupService.updateGroup(group);
+        groupService.updateGroup(role);
         return user;
     }
 }
