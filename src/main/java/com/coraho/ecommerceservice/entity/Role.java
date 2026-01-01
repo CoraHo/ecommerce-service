@@ -35,28 +35,35 @@ public class Role {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Many-to-Many relationship with User
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    private Set<User> users = new HashSet<>();
+    // One-to-many relationship with UserRole
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<UserRole> userRoles = new HashSet<>();
 
+    // One-to-many relationship with RolePermission
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RolePermission> rolePermissions = new HashSet<>();
 
-    // Many-to-Many relationship with Permission
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    private Set<Permission> permissions = new HashSet<>();
-
-    // Helper methods for managing permissions
-    public void addPermission(Permission permission) {
-        this.permissions.add(permission);
-        permission.getRoles().add(this);
+    // helper methods for mapping role-permission relationship
+    public void addPermission(Permission permission){
+        RolePermission rolePermission = new RolePermission();
+        rolePermission.setRole(this);
+        rolePermission.setPermission(permission);
+        this.rolePermissions.add(rolePermission);
+        permission.getRolePermissions().add(rolePermission);
     }
 
     public void removePermission(Permission permission) {
-        this.permissions.remove(permission);
-        permission.getRoles().remove(this);
+        RolePermission rolePermissionToBeRemoved = this.rolePermissions.stream()
+                .filter(rp -> rp.getRole().equals(this) && rp.getPermission().equals(permission))
+                .findFirst()
+                .orElse(null);
+
+        if (rolePermissionToBeRemoved != null) {
+            this.rolePermissions.remove(rolePermissionToBeRemoved);
+            permission.getRolePermissions().remove(rolePermissionToBeRemoved);
+        }
     }
+
 }

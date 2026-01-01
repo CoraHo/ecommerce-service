@@ -36,7 +36,8 @@ public class Permission {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Many-to-Many relationship with Role
-    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
-    private Set<Role> roles = new HashSet<>();
+    // One-to-Many relationship with RolePermission
+    @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RolePermission> rolePermissions = new HashSet<>();
 }
