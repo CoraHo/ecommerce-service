@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -39,16 +40,20 @@ public class User {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
-    @Column(name = "is_email_verified", columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(name = "is_email_verified", nullable = false)
+    @Builder.Default
     private Boolean isEmailVerified = false;
 
-    @Column(name = "is_active", columnDefinition = "TINYINT(1) DEFAULT 1")
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
 
-    @Column(name = "is_locked", columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(name = "is_locked", nullable = false)
+    @Builder.Default
     private Boolean isLocked = false;
 
-    @Column(name = "failed_login_attempts")
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
     private Integer failedLoginAttempts = 0;
 
     @Column(name = "locked_until")
@@ -58,30 +63,36 @@ public class User {
     private LocalDateTime lastLoginAt;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Many-to-Many relationship with Role
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    // One-to-many relationship with UserRole
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<UserRole> userRoles = new HashSet<>();
 
-    // Helper methods for managing relationships
+    // helper methods for mapping relationships
     public void addRole(Role role) {
-        this.roles.add(role);
-        role.getUsers().add(this);
+        UserRole userRole = new UserRole();
+        userRole.setUser(this);
+        userRole.setRole(role);
+        this.userRoles.add(userRole);
+        role.getUserRoles().add(userRole);
     }
 
     public void removeRole(Role role) {
-        this.roles.remove(role);
-        role.getUsers().remove(this);
+        UserRole userRoleToBeRemoved = this.userRoles.stream()
+                .filter(ur -> ur.getUser().equals(this) && ur.getRole().equals(role))
+                .findFirst()
+                .orElse(null);
+
+        if (userRoleToBeRemoved != null) {
+            this.userRoles.remove(userRoleToBeRemoved);
+            role.getUserRoles().remove(userRoleToBeRemoved);
+        }
     }
 }
