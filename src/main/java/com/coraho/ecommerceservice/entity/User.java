@@ -95,4 +95,40 @@ public class User {
             role.getUserRoles().remove(userRoleToBeRemoved);
         }
     }
+
+    // one-to-many relationship with refreshToken
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RefreshToken> refreshTokens = new HashSet<>();
+
+    // one-to-many relationship with PasswordResetToken
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<PasswordResetToken> passwordResetTokens = new HashSet<>();
+
+    // one-to-many relationship with EmailVerificationToken
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<EmailVerificationToken> emailVerificationTokens = new HashSet<>();
+
+    // one-to-many relationship with UserSession
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<UserSession> userSessions = new HashSet<>();
+
+    // one-to-many relationship with LoginAttempt
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<LoginAttempt> loginAttempts = new HashSet<>();
+
+    // one-to-many relationship with UserAddress
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<UserAddress> userAddresses = new HashSet<>();
+
+    // one-to-many relationship with AuditLog
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<AuditLog> auditLogs = new HashSet<>();
+
 }
