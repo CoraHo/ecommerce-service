@@ -46,7 +46,7 @@ public class Role {
     private Set<RolePermission> rolePermissions = new HashSet<>();
 
     // helper methods for mapping role-permission relationship
-    public void addPermission(Permission permission){
+    public void addPermission(Permission permission) {
         RolePermission rolePermission = new RolePermission();
         rolePermission.setRole(this);
         rolePermission.setPermission(permission);
