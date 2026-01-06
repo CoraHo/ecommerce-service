@@ -51,11 +51,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
         user.getUserRoles().forEach(userRole -> {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getName()));
+            authorities.add(new SimpleGrantedAuthority(userRole.getRole().getName()));
 
             userRole.getRole().getRolePermissions().forEach(rolePermission -> {
-                authorities.add(new SimpleGrantedAuthority(rolePermission.getPermission().getResource() + ":"
-                        + rolePermission.getPermission().getAction()));
+                authorities.add(new SimpleGrantedAuthority(rolePermission.getPermission().getName()));
             });
         });
         return authorities;
