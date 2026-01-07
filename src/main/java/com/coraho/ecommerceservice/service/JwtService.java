@@ -36,7 +36,7 @@ public class JwtService {
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(userDetails.getUsername()) // returns email
                 .claim("authorities", userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
@@ -47,6 +47,7 @@ public class JwtService {
     }
 
     public String getUsernameFromToken(String token) {
+        // returns email where it's set as the "username" in UserDetails
         return parseClaims(token).getSubject();
     }
 
