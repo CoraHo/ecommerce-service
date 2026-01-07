@@ -3,25 +3,28 @@ package com.coraho.ecommerceservice.service;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SecurityException;
+import lombok.extern.java.Log;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
+@Service
+@Log
 public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
     @Value("${security.jwt.expiration-time}")
     private long jwtExpirationMs;
 
-    private Key getSigningKey(){
+    private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -44,17 +47,40 @@ public class JwtService {
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
+        return parseClaims(token).getSubject();
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (SecurityException e) {
+            log.warning("Invalid JWT signature: " + e.getMessage());
+            return false;
+        } catch (MalformedJwtException e) {
+            log.warning("Invalid JWT token: " + e.getMessage());
+            return false;
+        } catch (ExpiredJwtException e) {
+            log.warning("JWT token is expired: " + e.getMessage());
+            return false;
+        } catch (UnsupportedJwtException e) {
+            log.warning("JWT token is unsupported: " + e.getMessage());
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.warning("JWT claims string is empty: " + e.getMessage());
+            return false;
+        } catch (JwtException e) {
+            log.warning("JWT related error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
                 .verifyWith((SecretKey) getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.getSubject();
-    }
-
-    public boolean validateToken(String token) {
-        // TODO
-        return false;
     }
 
 }
