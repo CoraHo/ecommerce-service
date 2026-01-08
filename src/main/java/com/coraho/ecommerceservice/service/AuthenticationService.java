@@ -2,6 +2,7 @@ package com.coraho.ecommerceservice.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,11 +42,13 @@ public class AuthenticationService {
         return user;
     }
 
-    public User authenticate(LoginRequest request) {
-        authenticationManager
+    public Authentication authenticate(LoginRequest request) {
+        Authentication authentication = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword()));
-        return userRepository.findByUsernameOrEmail(request.getUsernameOrEmail())
+        userRepository.findByUsernameOrEmail(request.getUsernameOrEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User does not exist with the email or username."));
+
+        return authentication;
     }
 }
