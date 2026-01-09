@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.coraho.ecommerceservice.DTO.LoginRequest;
 import com.coraho.ecommerceservice.DTO.LoginResponse;
 import com.coraho.ecommerceservice.DTO.RegisterRequest;
+import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.service.AuthenticationService;
 import com.coraho.ecommerceservice.service.JwtService;
@@ -25,9 +26,9 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest) {
-        User registerUser = authenticationService.signup(registerRequest);
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        RegisterResponse registerUser = authenticationService.signup(registerRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
     }

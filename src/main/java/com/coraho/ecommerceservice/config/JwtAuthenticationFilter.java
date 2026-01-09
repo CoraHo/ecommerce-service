@@ -46,9 +46,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // store the validated token into security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (Exception e) {
             log.warning("Cannot set user authentication: " + e.getMessage());
         }
+
+        // continue the chain
+        filterChain.doFilter(request, response);
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.coraho.ecommerceservice.DTO.LoginRequest;
 import com.coraho.ecommerceservice.DTO.RegisterRequest;
+import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.repository.UserRepository;
 
@@ -22,7 +23,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public User signup(RegisterRequest request) {
+    public RegisterResponse signup(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
@@ -37,9 +38,22 @@ public class AuthenticationService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .build();
+        User savedUser = userRepository.save(user);
 
-        userRepository.save(user);
-        return user;
+        RegisterResponse registerResponse = RegisterResponse.builder()
+                .id(savedUser.getId())
+                .email(savedUser.getEmail())
+                .username(savedUser.getUsername())
+                .username(savedUser.getUsername())
+                .firstName(savedUser.getFirstName())
+                .lastName(savedUser.getLastName())
+                .isActive(savedUser.getIsActive())
+                .isEmailVerified(savedUser.getIsEmailVerified())
+                .isLocked(savedUser.getIsLocked())
+                .createdAt(savedUser.getCreatedAt())
+                .build();
+
+        return registerResponse;
     }
 
     public Authentication authenticate(LoginRequest request) {
