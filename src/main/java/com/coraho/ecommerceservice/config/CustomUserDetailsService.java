@@ -25,9 +25,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @Transactional // prevent the error from lazy loading of collections
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsernameWithRolesAndPermissions(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found by username: " + username));
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // allow login with both username and email
+        User user = userRepository.findByUsernameOrEmailWithRolesAndPermissions(usernameOrEmail).orElseThrow(
+                () -> new UsernameNotFoundException("User not found by username or email: " + usernameOrEmail));
 
         if (!user.getIsActive()) {
             throw new UsernameNotFoundException("User account is inactive");
@@ -38,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
+                user.getEmail(), // use email as the principal (consistent identifier)
                 user.getPasswordHash(),
                 user.getIsActive(),
                 true,
