@@ -7,7 +7,6 @@ import com.coraho.ecommerceservice.DTO.LoginRequest;
 import com.coraho.ecommerceservice.DTO.LoginResponse;
 import com.coraho.ecommerceservice.DTO.RegisterRequest;
 import com.coraho.ecommerceservice.DTO.RegisterResponse;
-import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.service.AuthenticationService;
 import com.coraho.ecommerceservice.service.JwtService;
 

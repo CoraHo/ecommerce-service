@@ -52,6 +52,10 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
+        if (token == null || token.trim().isEmpty()) {
+            log.warning("Token validation failed: token is null or empty");
+            return false;
+        }
         try {
             parseClaims(token);
             return true;
