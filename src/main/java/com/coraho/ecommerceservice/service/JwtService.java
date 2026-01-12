@@ -3,7 +3,7 @@ package com.coraho.ecommerceservice.service;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 @Service
-@Log
+@Slf4j
 public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
@@ -53,29 +53,29 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         if (token == null || token.trim().isEmpty()) {
-            log.warning("Token validation failed: token is null or empty");
+            log.error("Token validation failed: token is null or empty");
             return false;
         }
         try {
             parseClaims(token);
             return true;
         } catch (SecurityException e) {
-            log.warning("Invalid JWT signature: " + e.getMessage());
+            log.error("Invalid JWT signature: " + e.getMessage());
             return false;
         } catch (MalformedJwtException e) {
-            log.warning("Invalid JWT token: " + e.getMessage());
+            log.error("Invalid JWT token: " + e.getMessage());
             return false;
         } catch (ExpiredJwtException e) {
-            log.warning("JWT token is expired: " + e.getMessage());
+            log.error("JWT token is expired: " + e.getMessage());
             return false;
         } catch (UnsupportedJwtException e) {
-            log.warning("JWT token is unsupported: " + e.getMessage());
+            log.error("JWT token is unsupported: " + e.getMessage());
             return false;
         } catch (IllegalArgumentException e) {
-            log.warning("JWT claims string is empty: " + e.getMessage());
+            log.error("JWT claims string is empty: " + e.getMessage());
             return false;
         } catch (JwtException e) {
-            log.warning("JWT related error: " + e.getMessage());
+            log.error("JWT related error: " + e.getMessage());
             return false;
         }
     }

@@ -16,16 +16,17 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-@Log
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
+    // this works after user logged in
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -43,12 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // audit and log the incoming request
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // store the validated token into security context
+                // store the validated token into spring security container
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
         } catch (Exception e) {
-            log.warning("Cannot set user authentication: " + e.getMessage());
+            log.error("Cannot set user authentication: " + e.getMessage());
         }
 
         // continue the chain

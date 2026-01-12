@@ -8,7 +8,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -88,12 +87,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<?> handleRefreshTokenException(RefreshTokenException e, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .error("Refresh Token Error")
+                .message(e.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now().toString())
+                .path(extractPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception e, WebRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error("Internal Server error")
                 .message(e.getMessage())
-                .status(500)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .timestamp(LocalDateTime.now().toString())
                 .path(extractPath(request))
                 .build();
