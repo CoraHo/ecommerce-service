@@ -1,4 +1,4 @@
-package com.coraho.ecommerceservice.service;
+package com.coraho.ecommerceservice.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

@@ -15,6 +15,7 @@ import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.RefreshToken;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.repository.UserRepository;
+import com.coraho.ecommerceservice.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -12,8 +12,8 @@ import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.RefreshToken;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.exception.RefreshTokenException;
+import com.coraho.ecommerceservice.security.JwtService;
 import com.coraho.ecommerceservice.service.AuthenticationService;
-import com.coraho.ecommerceservice.service.JwtService;
 import com.coraho.ecommerceservice.service.RefreshTokenService;
 import com.coraho.ecommerceservice.service.UserService;
 

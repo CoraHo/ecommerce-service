@@ -21,6 +21,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.coraho.ecommerceservice.security.CustomUserDetailsService;
+import com.coraho.ecommerceservice.security.JwtAccessDeniedHandler;
+import com.coraho.ecommerceservice.security.JwtAuthenticationEntryPoint;
+import com.coraho.ecommerceservice.security.JwtAuthenticationFilter;
+
 import lombok.RequiredArgsConstructor;
 
 @EnableMethodSecurity
@@ -30,6 +35,8 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -53,16 +60,23 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 // relies on a CorsConfigurationSource bean
                 .cors(Customizer.withDefaults())
+                // configure custom exception handling
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
+                        // public endpoints
                         .requestMatchers("/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/verify-email",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password")
                         .permitAll()
-
+                        // admin endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // product:write endpoints
                         .requestMatchers("/api/product/**").hasAuthority("products:WRITE")
+                        // all other requests require authentication
                         .anyRequest().authenticated())
                 // no session store needed for JWT token authentication
                 .sessionManagement(sesssion -> sesssion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
