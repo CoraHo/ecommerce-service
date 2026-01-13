@@ -14,25 +14,25 @@ import com.coraho.ecommerceservice.entity.RefreshToken;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-    Optional<RefreshToken> findByToken(String token);
+        Optional<RefreshToken> findByToken(String token);
 
-    List<RefreshToken> findByUserIdAndIsRevokedFalse(Long userId);
+        List<RefreshToken> findByUserIdAndIsRevokedFalse(Long userId);
 
-    @Modifying
-    @Query("""
-            UPDATE RefreshToken rt
-            SET rt.isRevoked = true, rt.revokedAt = :revokedAt
-            WHERE rt.user.id=:userId
-            """)
-    void revokeAllUserTokens(@Param("userId") Long userId, @Param("revokedAt") LocalDateTime revokedAt);
+        @Modifying
+        @Query("""
+                        UPDATE RefreshToken rt
+                        SET rt.isRevoked = true, rt.revokedAt = :revokedAt
+                        WHERE rt.user.id=:userId
+                        """)
+        void revokeAllUserTokens(@Param("userId") Long userId, @Param("revokedAt") LocalDateTime revokedAt);
 
-    @Modifying
-    @Query("""
-            DELETE FROM RefreshToken rt
-            WHERE rt.expiresAt < :now
-            """)
-    void deleteExpiredToken(@Param("now") LocalDateTime now);
+        @Modifying
+        @Query("""
+                        DELETE FROM RefreshToken rt
+                        WHERE rt.expiresAt < :now
+                        """)
+        void deleteExpiredToken(@Param("now") LocalDateTime now);
 
-    boolean existsByTokenAndIsRevokedFlase(String token);
+        boolean existsByTokenAndIsRevokedFalse(String token);
 
 }

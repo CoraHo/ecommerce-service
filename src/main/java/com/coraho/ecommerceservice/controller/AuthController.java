@@ -10,10 +10,12 @@ import com.coraho.ecommerceservice.DTO.ErrorResponse;
 import com.coraho.ecommerceservice.DTO.RegisterRequest;
 import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.RefreshToken;
+import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.exception.RefreshTokenException;
 import com.coraho.ecommerceservice.service.AuthenticationService;
 import com.coraho.ecommerceservice.service.JwtService;
 import com.coraho.ecommerceservice.service.RefreshTokenService;
+import com.coraho.ecommerceservice.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -35,6 +37,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -111,7 +114,9 @@ public class AuthController {
 
         String email = authentication.getName();
         // get user by email
+        User user = userService.findUserByEmail(email);
         // revoke all refresh tokens under the user
+        refreshTokenService.revokeAllUserTokens(user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body("All sesions logged out seccessfully.");
     }

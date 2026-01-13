@@ -88,7 +88,7 @@ public class RefreshTokenService {
     }
 
     public boolean isTokenValid(String token) {
-        return refreshTokenRepository.existsByTokenAndIsRevokedFlase(token);
+        return refreshTokenRepository.existsByTokenAndIsRevokedFalse(token);
     }
 
 }
