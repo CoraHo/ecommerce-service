@@ -11,26 +11,30 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByUsername(String username);
+        Optional<User> findByUsername(String username);
 
-    @Query("""
-            SELECT u FROM User u
-            WHERE u.username = :identifier OR u.email = :identifier
-            """)
-    Optional<User> findByUsernameOrEmail(@Param("identifier") String identifier);
+        Optional<User> findById(Long id);
 
-    @Query("""
-            SELECT u FROM User u
-            LEFT JOIN FETCH u.userRoles ur
-            LEFT JOIN FETCH ur.role r
-            LEFT JOIN FETCH r.rolePermissions rp
-            LEFT JOIN FETCH rp.permission
-            WHERE u.username = :identifier OR u.email = :identifier
-            """)
-    Optional<User> findByUsernameOrEmailWithRolesAndPermissions(@Param("identifier") String identifier);
+        Optional<User> findByEmail(String email);
 
-    boolean existsByUsername(String username);
+        @Query("""
+                        SELECT u FROM User u
+                        WHERE u.username = :identifier OR u.email = :identifier
+                        """)
+        Optional<User> findByUsernameOrEmail(@Param("identifier") String identifier);
 
-    boolean existsByEmail(String email);
+        @Query("""
+                        SELECT u FROM User u
+                        LEFT JOIN FETCH u.userRoles ur
+                        LEFT JOIN FETCH ur.role r
+                        LEFT JOIN FETCH r.rolePermissions rp
+                        LEFT JOIN FETCH rp.permission
+                        WHERE u.username = :identifier OR u.email = :identifier
+                        """)
+        Optional<User> findByUsernameOrEmailWithRolesAndPermissions(@Param("identifier") String identifier);
+
+        boolean existsByUsername(String username);
+
+        boolean existsByEmail(String email);
 
 }

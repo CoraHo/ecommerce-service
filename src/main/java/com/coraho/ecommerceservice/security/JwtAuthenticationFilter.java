@@ -1,4 +1,4 @@
-package com.coraho.ecommerceservice.config;
+package com.coraho.ecommerceservice.security;
 
 import java.io.IOException;
 
@@ -9,23 +9,22 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.coraho.ecommerceservice.service.JwtService;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-@Log
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
+    // this works after user logged in
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -35,20 +34,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractTokenFromRequest(request);
 
             if (token != null && jwtService.isTokenValid(token)) {
-                String username = jwtService.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                String email = jwtService.getUsernameFromToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 // Manually verified the token, so we can use the 3-argument constructor
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 
                 // audit and log the incoming request
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // store the validated token into security context
+                // store the validated token into spring security container
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
         } catch (Exception e) {
-            log.warning("Cannot set user authentication: " + e.getMessage());
+            log.error("Cannot set user authentication: " + e.getMessage());
         }
 
         // continue the chain

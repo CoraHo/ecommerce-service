@@ -1,4 +1,4 @@
-package com.coraho.ecommerceservice.config;
+package com.coraho.ecommerceservice.security;
 
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.repository.UserRepository;
