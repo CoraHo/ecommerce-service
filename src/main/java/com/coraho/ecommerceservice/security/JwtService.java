@@ -48,7 +48,27 @@ public class JwtService {
 
     public String getUsernameFromToken(String token) {
         // returns email where it's set as the "username" in UserDetails
-        return parseClaims(token).getSubject();
+        try {
+            return parseClaims(token).getSubject();
+        } catch (SecurityException e) {
+            log.error("Invalid JWT signature: " + e.getMessage());
+            throw new SecurityException("Invalid JWT signature: " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("Invalid JWT token: " + e.getMessage());
+            throw new MalformedJwtException("Invalid JWT token: " + e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("JWT token is expired: " + e.getMessage());
+            throw new ExpiredJwtException(null, null, "JWT token is expired: " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("JWT token is unsupported: " + e.getMessage());
+            throw new UnsupportedJwtException("JWT token is unsupported: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("JWT claims string is empty: " + e.getMessage());
+            throw new IllegalArgumentException("JWT claims string is empty: " + e.getMessage());
+        } catch (JwtException e) {
+            log.error("JWT related error: " + e.getMessage());
+            throw new JwtException("JWT related error: " + e.getMessage());
+        }
     }
 
     public boolean isTokenValid(String token) {
@@ -61,22 +81,22 @@ public class JwtService {
             return true;
         } catch (SecurityException e) {
             log.error("Invalid JWT signature: " + e.getMessage());
-            return false;
+            throw new SecurityException("Invalid JWT signature: " + e.getMessage());
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: " + e.getMessage());
-            return false;
+            throw new MalformedJwtException("Invalid JWT token: " + e.getMessage());
         } catch (ExpiredJwtException e) {
             log.error("JWT token is expired: " + e.getMessage());
-            return false;
+            throw new ExpiredJwtException(null, null, "JWT token is expired: " + e.getMessage());
         } catch (UnsupportedJwtException e) {
             log.error("JWT token is unsupported: " + e.getMessage());
-            return false;
+            throw new UnsupportedJwtException("JWT token is unsupported: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: " + e.getMessage());
-            return false;
+            throw new IllegalArgumentException("JWT claims string is empty: " + e.getMessage());
         } catch (JwtException e) {
             log.error("JWT related error: " + e.getMessage());
-            return false;
+            throw new JwtException("JWT related error: " + e.getMessage());
         }
     }
 
