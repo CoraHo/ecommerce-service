@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RefreshTokenService {
 
     @Value("${security.jwt.refresh.expiration}")
-    private long refreshTokenExpirationMS;
+    private long refreshTokenExpirationS;
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
@@ -37,7 +37,7 @@ public class RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
-                .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpirationMS))
+                .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpirationS))
                 .ipAddress(ipAddress)
                 .userAgent(userAgent)
                 .build();
@@ -78,7 +78,7 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public int deleteExpiredTokens() {
+    public int deleteExpiredRefreshTokens() {
         List<RefreshToken> expiredRefreshTokens = refreshTokenRepository.findAll()
                 .stream().filter(rt -> rt.getExpiresAt().isBefore(LocalDateTime.now()))
                 .toList();

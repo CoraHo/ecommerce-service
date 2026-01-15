@@ -11,7 +11,7 @@ import com.coraho.ecommerceservice.entity.EmailVerificationToken;
 @Repository
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
 
-    Optional<EmailVerificationToken> findbyTokenAndIsVerifiedFalse(String token);
+    Optional<EmailVerificationToken> findByTokenAndIsVerifiedFalse(String token);
 
     List<EmailVerificationToken> findByUserIdAndIsVerifiedFalse(Long userId);
 

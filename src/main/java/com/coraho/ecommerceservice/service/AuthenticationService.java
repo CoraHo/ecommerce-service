@@ -30,6 +30,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationTokenService emailVerificationTokenService;
 
     public RegisterResponse signup(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -47,6 +48,9 @@ public class AuthenticationService {
                 .lastName(request.getLastName())
                 .build();
         User savedUser = userRepository.save(user);
+
+        // send the verification email once the user is created
+        emailVerificationTokenService.createAndSendEmailVerificationToken(savedUser);
 
         RegisterResponse registerResponse = RegisterResponse.builder()
                 .id(savedUser.getId())
