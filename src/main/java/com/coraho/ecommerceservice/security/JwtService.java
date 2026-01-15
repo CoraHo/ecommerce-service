@@ -47,8 +47,8 @@ public class JwtService {
     }
 
     public String getUsernameFromToken(String token) {
-        // returns email where it's set as the "username" in UserDetails
         try {
+            // returns email where it's set as the "username" in UserDetails
             return parseClaims(token).getSubject();
         } catch (SecurityException e) {
             log.error("Invalid JWT signature: " + e.getMessage());
