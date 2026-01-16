@@ -16,14 +16,14 @@ public class CleanupExpiredTokenScheduler {
     private final RefreshTokenService refreshTokenService;
     private final EmailVerificationTokenService emailVerificationTokenService;
 
-    @Scheduled(cron = "0 0 2 * * ?")
+    @Scheduled(cron = "0 */5 * * * ?")
     public void cleanupExpiredRefreshTokens() {
         log.info("Starting cleanup of expired refresh token");
         int deletedCount = refreshTokenService.deleteExpiredRefreshTokens();
         log.info("Cleanup completed. Deleted {} expired refresh tokens.", deletedCount);
     }
 
-    @Scheduled(cron = "0 0 2 * * ?")
+    @Scheduled(cron = "0 */5 * * * ?")
     public void cleanupExpiredEmailVerificationTokens() {
         log.info("Starting cleanup of expired Email verification token");
         int deletedCount = emailVerificationTokenService.deleteExpiredEmailVerificationTokens();

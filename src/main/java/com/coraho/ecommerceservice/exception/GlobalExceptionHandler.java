@@ -113,6 +113,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(PasswordResetTokenException.class)
+    public ResponseEntity<?> handlePasswordResetTokenException(PasswordResetTokenException e, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .error("Password Reset Error")
+                .message(e.getMessage())
+                .status(409)
+                .timestamp(LocalDateTime.now().toString())
+                .path(extractPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception e, WebRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()

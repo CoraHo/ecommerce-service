@@ -35,10 +35,10 @@ public class EmailVerificationTokenService {
     private final UserRepository userRepository;
 
     @Value("${app.email.verification.token.expiration}")
-    private long emailVerificationTokenExpiryMS;
+    private long emailVerificationTokenExpiryS;
 
-    @Value("${app.email.verification.base-url}")
-    private String emailVerificationBaseUrl;
+    @Value("${app.email.base-url}")
+    private String emailBaseUrl;
 
     @Value("${app.email.secret-key}")
     private String emailVerificationTokenSecretKey;
@@ -64,13 +64,13 @@ public class EmailVerificationTokenService {
         EmailVerificationToken emailVerificationToken = EmailVerificationToken.builder()
                 .user(user)
                 .token(token)
-                .expiresAt(LocalDateTime.now().plusSeconds(emailVerificationTokenExpiryMS))
+                .expiresAt(LocalDateTime.now().plusSeconds(emailVerificationTokenExpiryS))
                 .build();
 
         emailVerificationTokenRepository.save(emailVerificationToken);
 
         // send email
-        String verificationLink = emailVerificationBaseUrl + "/api/auth/verify-email?token="
+        String verificationLink = emailBaseUrl + "/api/auth/verify-email?token="
                 + emailVerificationToken;
         emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), verificationLink);
     }
@@ -144,7 +144,7 @@ public class EmailVerificationTokenService {
 
     private String generateEmailVerificationToken(String email) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + emailVerificationTokenExpiryMS);
+        Date expiryDate = new Date(now.getTime() + emailVerificationTokenExpiryS);
 
         return Jwts.builder()
                 .subject(email) // returns email
