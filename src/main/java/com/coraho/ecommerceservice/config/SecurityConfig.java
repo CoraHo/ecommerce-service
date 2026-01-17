@@ -69,8 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/verify-email",
-                                "/api/auth/forgot-password",
-                                "/api/auth/reset-password")
+                                "/api/auth/forgot-password")
                         .permitAll()
                         // admin endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

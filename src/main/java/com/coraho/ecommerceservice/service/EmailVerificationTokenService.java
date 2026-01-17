@@ -107,9 +107,10 @@ public class EmailVerificationTokenService {
         user.setIsEmailVerified(true);
         userRepository.save(user);
 
-        log.info("Email veified successfullt for user; {}", email);
+        log.info("Email is verified successfully for user: {}", email);
     }
 
+    @Transactional
     public void resendVerificationEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

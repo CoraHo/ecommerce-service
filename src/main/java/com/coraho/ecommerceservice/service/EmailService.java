@@ -38,12 +38,12 @@ public class EmailService {
             javaMailSender.send(message);
             log.info("Verification email sent to: {}", toEmail);
         } catch (Exception e) {
-            log.error("Failed to send verification email to: {}", toEmail, e.getMessage());
+            log.error("Failed to send verification email to: {}. {}", toEmail, e.getMessage());
             throw new EmailVerificationException("Failed to send verification email: " + e.getMessage());
         }
     }
 
-    public void sendPasswrodResetEmail(String toEmail, String firstName, String verificationLink) {
+    public void sendPasswordResetEmail(String toEmail, String firstName, String verificationLink) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -58,8 +58,28 @@ public class EmailService {
             javaMailSender.send(message);
             log.info("Password reset email sent to: {}", toEmail);
         } catch (Exception e) {
-            log.error("Failed to send password reset email to: {}", toEmail, e.getMessage());
+            log.error("Failed to send password reset email to: {}. {}", toEmail, e.getMessage());
             throw new EmailVerificationException("Failed to send password reset email: " + e.getMessage());
+        }
+    }
+
+    public void sendPasswordResetConfirmationEmail(String toEmail, String firstName) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail, appName);
+            helper.setTo(toEmail);
+            helper.setSubject("Your password has been updated");
+
+            String htmlContent = buildPasswordResetConfirmationEmail(firstName);
+            helper.setText(htmlContent, true);
+
+            javaMailSender.send(message);
+            log.info("Password reset confirmation email sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send password reset confirmation email to: {}. {}", toEmail, e.getMessage());
+            throw new EmailVerificationException("Failed to send password reset confirmation email: " + e.getMessage());
         }
     }
 
@@ -94,7 +114,7 @@ public class EmailService {
                         <p>%s</p>
                         <p>This link will expire in 5 minutes.</p>
                         <div class="footer">
-                            <p>If you didn't reqest a password reset email, please ignore this email.</p>
+                            <p>If you didn't request this, please ignore this email.</p>
                             <p>&copy; 2025 %s. All rights reserved.</p>
                         </div>
                     </div>
@@ -134,13 +154,50 @@ public class EmailService {
                         <p>%s</p>
                         <p>This link will expire in 5 minutes.</p>
                         <div class="footer">
-                            <p>If you didn't create this account, please ignore this email.</p>
+                            <p>If you didn't request this, please ignore this email.</p>
                             <p>&copy; 2025 %s. All rights reserved.</p>
                         </div>
                     </div>
                 </body>
                 </html>
                 """.formatted(appName, firstName, verificationLink, verificationLink, appName);
+    }
+
+    private String buildPasswordResetConfirmationEmail(String firstName) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .button {
+                            display: inline-block;
+                            padding: 12px 24px;
+                            background-color: #007bff;
+                            color: #ffffff;
+                            text-decoration: none;
+                            border-radius: 4px;
+                            margin: 20px 0;
+                        }
+                        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Welcome to %s!</h2>
+                        <p>Hi %s,</p>
+                        <p>You're password has been reset successfully!</p>
+                        
+                        <div class="footer">
+                            <p>If you didn't request this, please contact us immediately.</p>
+                            <p>&copy; 2025 %s. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(appName, firstName, appName);
     }
 
 }

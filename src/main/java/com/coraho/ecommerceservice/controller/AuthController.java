@@ -1,22 +1,13 @@
 package com.coraho.ecommerceservice.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.coraho.ecommerceservice.DTO.*;
+import com.coraho.ecommerceservice.service.*;
+import org.springframework.web.bind.annotation.*;
 
-import com.coraho.ecommerceservice.DTO.LoginRequest;
-import com.coraho.ecommerceservice.DTO.RefreshTokenRequest;
-import com.coraho.ecommerceservice.DTO.AuthResponse;
-import com.coraho.ecommerceservice.DTO.ErrorResponse;
-import com.coraho.ecommerceservice.DTO.RegisterRequest;
-import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.RefreshToken;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.exception.RefreshTokenException;
 import com.coraho.ecommerceservice.security.JwtService;
-import com.coraho.ecommerceservice.service.AuthenticationService;
-import com.coraho.ecommerceservice.service.EmailVerificationTokenService;
-import com.coraho.ecommerceservice.service.RefreshTokenService;
-import com.coraho.ecommerceservice.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -28,10 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,6 +29,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserService userService;
     private final EmailVerificationTokenService emailVerificationTokenService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -55,6 +43,35 @@ public class AuthController {
         emailVerificationTokenService.verifyEmail(token);
 
         return ResponseEntity.ok("Email verified successfully");
+    }
+
+    // This API requires user login
+    @PutMapping("/reset-password")
+    public ResponseEntity<String> resetPasswordWithCurrentPassword(@RequestBody PasswordResetRequest request) {
+        passwordResetService.resetPasswordWithCurrentPassword(request);
+
+        return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody PasswordRequest passwordRequest) {
+        passwordResetService.forgotPassword(passwordRequest.getEmail());
+
+        return ResponseEntity.ok("Reset password email is sent successfully");
+    }
+
+    @GetMapping("/validate-reset-password-token")
+    public ResponseEntity<String> verifyResetPasswordToken(@RequestParam String token) {
+        // validate password reset token
+        passwordResetService.validatePasswordResetToken(token);
+
+        return ResponseEntity.ok("Password reset token is verified successfully");
+    }
+
+    @PostMapping("/reset-password-with-token")
+    public ResponseEntity<String> resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
+        passwordResetService.resetPasswordWithToken(request);
+        return ResponseEntity.ok("Password has been reset successfully");
     }
 
     @PostMapping("/resend-verification")
