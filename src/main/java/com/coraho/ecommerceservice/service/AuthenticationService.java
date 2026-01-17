@@ -52,7 +52,7 @@ public class AuthenticationService {
         // send the verification email once the user is created
         emailVerificationTokenService.createAndSendEmailVerificationToken(savedUser);
 
-        RegisterResponse registerResponse = RegisterResponse.builder()
+        return RegisterResponse.builder()
                 .id(savedUser.getId())
                 .email(savedUser.getEmail())
                 .username(savedUser.getUsername())
@@ -65,10 +65,10 @@ public class AuthenticationService {
                 .createdAt(savedUser.getCreatedAt())
                 .build();
 
-        return registerResponse;
     }
 
     public AuthResponse authenticate(LoginRequest request, String ipAddress, String userAgent) {
+        // validate if user is active, unlocked, and valid
         Authentication authentication = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword()));
@@ -84,14 +84,13 @@ public class AuthenticationService {
         // generate refresh token
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId(), ipAddress, userAgent);
 
-        log.info("User logged in successfully: ", user.getEmail());
+        log.info("User logged in successfully: {}", user.getEmail());
 
-        AuthResponse loginResponse = AuthResponse.builder()
+        return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getToken())
                 .username(user.getUsername())
                 .email(user.getEmail()).build();
 
-        return loginResponse;
     }
 }
