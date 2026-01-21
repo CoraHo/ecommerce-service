@@ -78,7 +78,11 @@ public class SecurityConfig {
                         // all other requests require authentication
                         .anyRequest().authenticated())
                 // no session store needed for JWT token authentication
-                .sessionManagement(sesssion -> sesssion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sesssion -> sesssion
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(3)
+                        .maxSessionsPreventsLogin(false)
+                        .expiredUrl("/login?expired=true"))
                 .authenticationProvider(authenticationProvider())
                 // add JWT filter
                 // should not use httpBasic for JWT authentication, since httpBasic is for

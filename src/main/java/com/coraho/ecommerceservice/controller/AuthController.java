@@ -10,6 +10,7 @@ import com.coraho.ecommerceservice.exception.RefreshTokenException;
 import com.coraho.ecommerceservice.security.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -98,11 +99,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody LoginRequest loginRequest,
-            HttpServletRequest request) {
+            HttpServletRequest request, HttpSession session) {
+
         String ipAddress = getCurrentIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
 
         AuthResponse authResponse = authenticationService.authenticate(loginRequest, ipAddress, userAgent);
+
+        // session is automatically created and stored in database
+        session.setAttribute("user", authResponse.getEmail());
+        session.setAttribute("loginTime", LocalDateTime.now());
+
+        authResponse.setSessionId(session.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(authResponse);
     }
@@ -141,8 +149,10 @@ public class AuthController {
     }
 
     @PostMapping("/log-out")
-    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest, HttpSession session) {
         refreshTokenService.revokeToken(refreshTokenRequest.getRefreshToken());
+        // session remvoed from database
+        session.invalidate();
         return ResponseEntity.status(HttpStatus.OK).body("Logout successfully.");
     }
 
