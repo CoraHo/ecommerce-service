@@ -58,14 +58,9 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public void resetPasswordWithCurrentPassword(PasswordResetRequest request) {
-        // retrieve user from database
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthenticationCredentialsNotFoundException("Full authentication is required");
-        }
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public void resetPasswordWithCurrentPassword(PasswordResetRequest request, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // verify the current password is correct
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
@@ -80,7 +75,8 @@ public class PasswordResetService {
     @Transactional
     public void forgotPassword(String email) {
         // verify if user exists in database, valid, and non-locked
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!user.getIsActive()) {
             throw new DisabledException("Account is disabled");
         }
@@ -137,7 +133,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public void resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
+    public String resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
         User user = validateTokenAndUser(request.getToken()); // Extract common logic
         log.info("Password reset token is verified successfully");
 
@@ -154,6 +150,7 @@ public class PasswordResetService {
         passwordResetTokenRepository.save(passwordResetToken);
 
         log.info("Password reset successfully for user: {}", user.getEmail());
+        return user.getEmail();
     }
 
     private void resetPassword(User user, String newPassword) {
@@ -162,8 +159,7 @@ public class PasswordResetService {
         if (!newPassword.matches(passwordRegex)) {
             throw new IllegalArgumentException(
                     "Password must be at least 6 characters and contain at least one uppercase letter, " +
-                            "one lowercase letter, and one digit"
-            );
+                            "one lowercase letter, and one digit");
         }
 
         // ensure new password is different

@@ -15,9 +15,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -31,6 +33,7 @@ public class AuthController {
     private final UserService userService;
     private final EmailVerificationTokenService emailVerificationTokenService;
     private final PasswordResetService passwordResetService;
+    private final SessionManagementService sessionManagementService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -48,8 +51,26 @@ public class AuthController {
 
     // This API requires user login
     @PutMapping("/reset-password")
-    public ResponseEntity<String> resetPasswordWithCurrentPassword(@RequestBody PasswordResetRequest request) {
-        passwordResetService.resetPasswordWithCurrentPassword(request);
+    public ResponseEntity<?> resetPasswordWithCurrentPassword(@RequestBody PasswordResetRequest request,
+            HttpSession session) {
+        // retrieve user from database
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("Unauthorized")
+                    .message("Authentication failed")
+                    .status(HttpStatus.UNAUTHORIZED.value())
+                    .timestamp(LocalDateTime.now().toString())
+                    .path("/api/auth/reset-password")
+                    .build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
+        String email = authentication.getName();
+
+        passwordResetService.resetPasswordWithCurrentPassword(request, email);
+
+        // invalidate all user sessions except the current one
+        sessionManagementService.invalidateAllUserSessionsExceptCurrent(email, session.getId());
 
         return ResponseEntity.ok("Password has been reset successfully");
     }
@@ -71,7 +92,11 @@ public class AuthController {
 
     @PostMapping("/reset-password-with-token")
     public ResponseEntity<String> resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
-        passwordResetService.resetPasswordWithToken(request);
+        String email = passwordResetService.resetPasswordWithToken(request);
+
+        // invalidate all user sessions
+        sessionManagementService.invalidateAllUserSessions(email);
+
         return ResponseEntity.ok("Password has been reset successfully");
     }
 
@@ -178,7 +203,20 @@ public class AuthController {
         // revoke all refresh tokens under the user
         refreshTokenService.revokeAllUserTokens(user.getId());
 
+        // invalidae all spring sessions for this user
+        sessionManagementService.invalidateAllUserSessions(email);
+
         return ResponseEntity.status(HttpStatus.OK).body("All sesions logged out seccessfully.");
+    }
+
+    @GetMapping("/session-info")
+    public ResponseEntity<?> getSessionInfo(HttpSession session) {
+        return ResponseEntity.ok(Map.of(
+                "sessionId", session.getId(),
+                "creationTime", session.getCreationTime(),
+                "lastAccessedTime", session.getLastAccessedTime(),
+                "maxInactiveInterval", session.getMaxInactiveInterval(),
+                "isNew", session.isNew()));
     }
 
     private String getCurrentIpAddress(HttpServletRequest request) {
@@ -188,4 +226,5 @@ public class AuthController {
         }
         return request.getRemoteAddr();
     }
+
 }
