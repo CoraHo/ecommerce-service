@@ -110,11 +110,6 @@ public class User {
     @Builder.Default
     private Set<EmailVerificationToken> emailVerificationTokens = new HashSet<>();
 
-    // one-to-many relationship with UserSession
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<UserSession> userSessions = new HashSet<>();
-
     // one-to-many relationship with LoginAttempt
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
