@@ -1,11 +1,13 @@
 package com.coraho.ecommerceservice.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import com.coraho.ecommerceservice.entity.LoginAttempt;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.entity.LoginAttempt.AttemptResult;
@@ -42,6 +44,9 @@ public class LoginAttemptService {
     @Value("${security.login.suspicious-location-threshold:3}")
     private int suspiciousLocationThreshold;
 
+    @Value("${security.login.attempt-retention-days:90}")
+    private int attemptRententionDays;
+
     /* Record a login attempt */
     public void recordLoginAttempt(String email, String ipAddress, String userAgent, AttemptResult attemptResult,
             String failureReason) {
@@ -65,8 +70,13 @@ public class LoginAttemptService {
     /* Handle successful login - reset countes and update last login */
     @Transactional
     public void handleSuccessfullogin(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return;
+        }
+
+        User user = userOpt.get();
 
         user.setFailedLoginAttempts(0);
         user.setLastLoginAt(LocalDateTime.now());
@@ -85,8 +95,13 @@ public class LoginAttemptService {
     /* Handle failed login - update counters and lock if needed */
     @Transactional
     public void handleFailedLogin(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return;
+        }
+
+        User user = userOpt.get();
 
         int failedLoginAttempt = user.getFailedLoginAttempts() + 1;
         user.setFailedLoginAttempts(failedLoginAttempt);
@@ -121,11 +136,58 @@ public class LoginAttemptService {
         return false;
     }
 
-    /* Check if the IP is blocked */
+    /* Check is user is locked */
+    @Transactional
+    public boolean isUserLocked(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        User user = userOpt.get();
+
+        // Check if user is manually locked
+        if (Boolean.TRUE.equals(user.getIsLocked())) {
+            if (user.getLockedUntil() != null && user.getLockedUntil().isBefore(LocalDateTime.now())) {
+                // Unlock user
+                user.setIsLocked(false);
+                user.setLockedUntil(null);
+                userRepository.save(user);
+                log.info("User account unlocked: {}", email);
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    /* Check if the IP is blocked due to excessive attempts */
     public boolean isIpBlocked(String ipAddress) {
         LocalDateTime since = LocalDateTime.now().minusMinutes(attemptWindowMunites);
         long failedAttempts = loginAttemptRepository.countFailedLoginsByIpAddressAndSince(ipAddress, since);
 
         return failedAttempts >= ipMaxAttempts;
+    }
+
+    /* Get lockout remaining time for a user */
+    public Optional<Duration> getLockoutRemaining(String email) {
+        return userRepository.findByEmail(email)
+                .filter(user -> Boolean.TRUE.equals(user.getIsLocked()))
+                .map(User::getLockedUntil)
+                .filter(lockedUntil -> lockedUntil.isAfter(LocalDateTime.now()))
+                .map(lockedUntil -> Duration.between(LocalDateTime.now(), lockedUntil));
+    }
+
+    /* Cleanup old login attempts */
+    public long deleteOldAttempts() {
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(attemptRententionDays);
+        List<LoginAttempt> oldLoginAttempts = loginAttemptRepository.findAll().stream()
+                .filter(la -> la.getAttemptedAt().isBefore(cutoffDate))
+                .toList();
+
+        loginAttemptRepository.deleteAll(oldLoginAttempts);
+        log.info("Cleaned up login attempts that are older than {} days", attemptRententionDays);
+        return oldLoginAttempts.size();
     }
 }
