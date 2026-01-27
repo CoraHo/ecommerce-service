@@ -25,6 +25,7 @@ import com.coraho.ecommerceservice.security.CustomUserDetailsService;
 import com.coraho.ecommerceservice.security.JwtAccessDeniedHandler;
 import com.coraho.ecommerceservice.security.JwtAuthenticationEntryPoint;
 import com.coraho.ecommerceservice.security.JwtAuthenticationFilter;
+import com.coraho.ecommerceservice.security.LoginAttemptFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final LoginAttemptFilter loginAttemptFilter;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -87,6 +89,7 @@ public class SecurityConfig {
                 // add JWT filter
                 // should not use httpBasic for JWT authentication, since httpBasic is for
                 // username.password authentication in every request
+                .addFilterBefore(loginAttemptFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
