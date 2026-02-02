@@ -89,7 +89,7 @@ public class SecurityConfig {
                 // add JWT filter
                 // should not use httpBasic for JWT authentication, since httpBasic is for
                 // username.password authentication in every request
-                .addFilterBefore(loginAttemptFilter, JwtAuthenticationFilter.class)
+                .addFilterBefore(loginAttemptFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

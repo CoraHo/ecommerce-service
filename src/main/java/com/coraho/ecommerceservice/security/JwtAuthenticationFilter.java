@@ -33,16 +33,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = extractTokenFromRequest(request);
 
+            // authenticating already logged-in users on every request using JWT
             if (token != null && jwtService.isTokenValid(token)) {
+                // get user email
                 String email = jwtService.getUsernameFromToken(token);
+                // pull user from DB, ensure user still exists, and load roles/permissions
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                // Manually verified the token, so we can use the 3-argument constructor
+                // This constructor marks the authentictaion token as already authenticated
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 
-                // audit and log the incoming request
+                // Adds IP or session ID to audit and log the incoming request
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // store the validated token into spring security container
+                // Spring will consider the user is authenticated for this request
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
