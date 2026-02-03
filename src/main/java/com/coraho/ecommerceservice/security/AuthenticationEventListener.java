@@ -45,7 +45,7 @@ public class AuthenticationEventListener {
         loginAttemptService.recordLoginAttempt(email, ipAddress, userAgent, AttemptResult.SUCCESS, null);
 
         // handle successful login
-        loginAttemptService.handleSuccessfullogin(email);
+        loginAttemptService.handleSuccessfullogin(email, ipAddress);
 
         log.info("Successful authentication for user: {} from IP: {}", email, ipAddress);
 

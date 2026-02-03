@@ -25,6 +25,7 @@ public class LoginAttemptService {
 
     private final LoginAttemptRepository loginAttemptRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Value("${security.login.max-attempts:5}")
     private int maxFailedAttempts;
@@ -69,7 +70,7 @@ public class LoginAttemptService {
 
     /* Handle successful login - reset countes and update last login */
     @Transactional
-    public void handleSuccessfullogin(String email) {
+    public void handleSuccessfullogin(String email, String ipAddress) {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
@@ -86,6 +87,13 @@ public class LoginAttemptService {
             user.setIsLocked(false);
             user.setLockedUntil(null);
             log.info("User account unlocked: {}", email);
+        }
+
+        // send a email to the use when new IP is detected
+        boolean isNewIP = loginAttemptRepository.existsByUserIdAndIpAddressAndAttemptResult(user.getId(), ipAddress,
+                AttemptResult.SUCCESS);
+        if (!isNewIP) {
+            emailService.sendNewIPLoggedInEmail(email, user.getFirstName(), ipAddress);
         }
 
         userRepository.save(user);

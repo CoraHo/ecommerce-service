@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.coraho.ecommerceservice.entity.LoginAttempt;
+import com.coraho.ecommerceservice.entity.LoginAttempt.AttemptResult;
 
 @Repository
 public interface LoginAttemptRepository extends JpaRepository<LoginAttempt, Long> {
@@ -61,5 +62,7 @@ public interface LoginAttemptRepository extends JpaRepository<LoginAttempt, Long
                         AND la.attemptedAt > :since
                         """)
         long countDistincIPAddressByEmailSince(@Param("email") String email, @Param("since") LocalDateTime since);
+
+        boolean existsByUserIdAndIpAddressAndAttemptResult(Long userId, String ipAddress, AttemptResult attemptResult);
 
 }
