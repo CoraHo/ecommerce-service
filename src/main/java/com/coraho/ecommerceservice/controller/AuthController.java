@@ -48,7 +48,7 @@ public class AuthController {
         return ResponseEntity.ok("Email verified successfully");
     }
 
-    // This API requires user login
+    // user update their password from their profile
     @PutMapping("/reset-password")
     public ResponseEntity<?> resetPasswordWithCurrentPassword(@RequestBody PasswordResetRequest request,
             HttpSession session) {
@@ -74,6 +74,7 @@ public class AuthController {
         return ResponseEntity.ok("Password has been reset successfully");
     }
 
+    // user request forgot password before they login
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody PasswordRequest passwordRequest) {
         passwordResetService.forgotPassword(passwordRequest.getEmail());
@@ -89,6 +90,7 @@ public class AuthController {
         return ResponseEntity.ok("Password reset token is verified successfully");
     }
 
+    // user reset their password from forgot password request token
     @PostMapping("/reset-password-with-token")
     public ResponseEntity<String> resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
         String email = passwordResetService.resetPasswordWithToken(request);

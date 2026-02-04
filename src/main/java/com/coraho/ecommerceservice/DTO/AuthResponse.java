@@ -11,6 +11,6 @@ public class AuthResponse {
     private String username;
     private String email;
     private String sessionId;
-    private String type = "Bearer";
+    private final String type = "Bearer";
 
 }

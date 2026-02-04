@@ -1,4 +1,4 @@
-package com.coraho.ecommerceservice.exception;
+package com.coraho.ecommerceservice.exception.exceptionHandler;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import com.coraho.ecommerceservice.DTO.ErrorResponse;
+import com.coraho.ecommerceservice.exception.EmailVerificationException;
+import com.coraho.ecommerceservice.exception.PasswordResetTokenException;
+import com.coraho.ecommerceservice.exception.RefreshTokenException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -78,7 +81,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error("Unauthorized")
-                .message("Authentication failed")
+                .message("Authentication failed: " + ex.getMessage())
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .timestamp(LocalDateTime.now().toString())
                 .path(extractPath(request))
