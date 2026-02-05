@@ -1,14 +1,17 @@
 package com.coraho.ecommerceservice.service;
 
 import com.coraho.ecommerceservice.DTO.UpdateProfileRequest;
+import com.coraho.ecommerceservice.DTO.UpdateUserAddressRequest;
 import com.coraho.ecommerceservice.DTO.UserAddressResponse;
 import com.coraho.ecommerceservice.DTO.UserProfileResponse;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.entity.UserAddress;
-import com.coraho.ecommerceservice.exception.UserProfileException;
+import com.coraho.ecommerceservice.exception.DuplicateResourceException;
+import com.coraho.ecommerceservice.exception.NoChangesDetectedException;
+import com.coraho.ecommerceservice.exception.ResourceNotFoundException;
+import com.coraho.ecommerceservice.repository.UserAddressRepository;
 import com.coraho.ecommerceservice.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -21,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EmailVerificationTokenService emailVerificationTokenService;
+    private final UserAddressRepository userAddressRepository;
 
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -45,6 +50,12 @@ public class UserService {
         return mapToUserProfileResponse(user);
     }
 
+    /**
+     * Update the user information in User entity
+     * 
+     * @param request
+     * @return A instance of UserProfileResponse
+     */
     @Transactional
     public UserProfileResponse updateUserProfile(UpdateProfileRequest request) {
         User user = getCurrentAuthenticatedUser();
@@ -55,7 +66,7 @@ public class UserService {
                 && user.getPhoneNumber().equals(request.getPhoneNumber())
                 && user.getEmail().equals(request.getEmail())
                 && user.getUsername().equals(request.getUsername())) {
-            throw new UserProfileException("No changes in user profile");
+            throw new NoChangesDetectedException("No changes in user profile");
         }
 
         // update user information
@@ -67,7 +78,7 @@ public class UserService {
         if (request.getUsername() != null && !user.getUsername().equals(request.getUsername())) {
             Optional<User> existingUserOpt = userRepository.findByUsername(request.getUsername());
             if (existingUserOpt.isPresent()) {
-                throw new UserProfileException("Username already exists");
+                throw new DuplicateResourceException("Username already exists");
             } else {
                 user.setUsername(request.getUsername());
             }
@@ -77,7 +88,7 @@ public class UserService {
         if (request.getEmail() != null && !user.getEmail().equals(request.getEmail())) {
             Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
             if (existingUserOpt.isPresent()) {
-                throw new UserProfileException("Email already exists");
+                throw new DuplicateResourceException("Email already exists");
             } else {
                 user.setEmail(request.getEmail());
                 // set isEmailVerified as false and send a email verifictaion email
@@ -92,6 +103,95 @@ public class UserService {
 
         return mapToUserProfileResponse(updatedUser);
     }
+
+    /**
+     * Get all addresses for current user
+     * 
+     * @return A list of UserAddressResponse instances
+     */
+    @Transactional(readOnly = true)
+    public List<UserAddressResponse> getCurrentUserAddresses() {
+        User user = getCurrentAuthenticatedUser();
+
+        List<UserAddress> addresses = userAddressRepository.findByUserId(user.getId());
+
+        List<UserAddressResponse> addressResponses = addresses.stream()
+                .map(this::mapToUserAddressResponse)
+                .collect(Collectors.toList());
+
+        return addressResponses;
+    }
+
+    /**
+     * Add a new UserAddress instance into database
+     * 
+     * @param request
+     * @return A UserAddressResponse instance
+     */
+    @Transactional
+    public UserAddressResponse addUserAddress(UpdateUserAddressRequest request) {
+        User user = getCurrentAuthenticatedUser();
+
+        // If this is set as default, clear other default addresses
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            userAddressRepository.clearDefaultAddresses(user.getId());
+        }
+
+        UserAddress address = UserAddress.builder()
+                .user(user)
+                .addressType(request.getAddressType())
+                .isDefault(request.getIsDefault() != null ? request.getIsDefault() : false)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .addressLine1(request.getAddressLine1())
+                .addressLine2(request.getAddressLine2())
+                .city(request.getCity())
+                .stateProvince(request.getStateProvince())
+                .postalCode(request.getPostalCode())
+                .country(request.getCountry())
+                .build();
+
+        UserAddress savedAddress = userAddressRepository.save(address);
+
+        // TODO: save the change in AuditLog
+
+        return mapToUserAddressResponse(savedAddress);
+    }
+
+    @Transactional
+    public UserAddressResponse updateUserAddress(Long addressId, UpdateUserAddressRequest request) {
+        User user = getCurrentAuthenticatedUser();
+
+        UserAddress address = userAddressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+
+        // if the current address is set as default, clear other default addresses
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            userAddressRepository.clearDefaultAddresses(user.getId());
+        }
+
+        // Update address fields
+        address.setAddressType(request.getAddressType());
+        address.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
+        address.setFirstName(request.getFirstName());
+        address.setLastName(request.getLastName());
+        address.setPhoneNumber(request.getPhoneNumber());
+        address.setAddressLine1(request.getAddressLine1());
+        address.setAddressLine2(request.getAddressLine2());
+        address.setCity(request.getCity());
+        address.setStateProvince(request.getStateProvince());
+        address.setPostalCode(request.getPostalCode());
+        address.setCountry(request.getCountry());
+
+        UserAddress savedAddress = userAddressRepository.save(address);
+
+        // TODO: save the change in AuditLog
+
+        return mapToUserAddressResponse(savedAddress);
+    }
+
+    // helper methods
 
     private User getCurrentAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
