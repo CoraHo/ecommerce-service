@@ -9,6 +9,9 @@ import java.util.Optional;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -111,9 +114,8 @@ public class EmailVerificationTokenService {
     }
 
     @Transactional
-    public void resendVerificationEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public void resendVerificationEmail() {
+        User user = getCurrentAuthenticatedUser();
 
         // avoid resue and manual replay
         if (user.getIsEmailVerified()) {
@@ -141,6 +143,19 @@ public class EmailVerificationTokenService {
         emailVerificationTokenRepository.deleteAll(expiredTokens);
         log.info("Deleted {} expired Email verification tokens", expiredTokens.size());
         return expiredTokens.size();
+    }
+
+    // helper methods
+
+    private User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new InsufficientAuthenticationException("User not logged in");
+        }
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return currentUser;
     }
 
     private String generateEmailVerificationToken(String email) {
