@@ -154,11 +154,18 @@ public class UserService {
 
         UserAddress savedAddress = userAddressRepository.save(address);
 
-        // TODO: save the change in AuditLog
+        // TODO: log the change in AuditLog
 
         return mapToUserAddressResponse(savedAddress);
     }
 
+    /**
+     * Update user address in UserAddress table
+     * 
+     * @param addressId
+     * @param request
+     * @return
+     */
     @Transactional
     public UserAddressResponse updateUserAddress(Long addressId, UpdateUserAddressRequest request) {
         User user = getCurrentAuthenticatedUser();
@@ -186,9 +193,50 @@ public class UserService {
 
         UserAddress savedAddress = userAddressRepository.save(address);
 
-        // TODO: save the change in AuditLog
+        // TODO: log the change in AuditLog
 
         return mapToUserAddressResponse(savedAddress);
+    }
+
+    /**
+     * Delete the UserAddress by id for the current logged-in user
+     * 
+     * @param userAddressId
+     */
+    public void deleteUserAddress(Long userAddressId) {
+        User user = getCurrentAuthenticatedUser();
+
+        UserAddress userAddress = userAddressRepository.findByIdAndUserId(userAddressId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User Address not found"));
+
+        userAddressRepository.delete(userAddress);
+
+        // TODO: log the change in AuditLog
+    }
+
+    /**
+     * Update the default user address
+     * 
+     * @param userAddressId
+     * @return
+     */
+    public UserAddressResponse setDefaultUserAddress(Long userAddressId) {
+        User user = getCurrentAuthenticatedUser();
+
+        UserAddress userAddress = userAddressRepository.findByIdAndUserId(userAddressId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User Address not found"));
+
+        // Clear all default addresses first
+        userAddressRepository.clearDefaultAddresses(user.getId());
+
+        // Set this address as default
+        userAddress.setIsDefault(true);
+
+        UserAddress savedUserAddress = userAddressRepository.save(userAddress);
+
+        // TODO: log this change in AuditLog
+
+        return mapToUserAddressResponse(savedUserAddress);
     }
 
     // helper methods

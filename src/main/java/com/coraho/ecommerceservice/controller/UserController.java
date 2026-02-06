@@ -6,7 +6,6 @@ import com.coraho.ecommerceservice.DTO.UpdateProfileRequest;
 import com.coraho.ecommerceservice.DTO.UpdateUserAddressRequest;
 import com.coraho.ecommerceservice.DTO.UserAddressResponse;
 import com.coraho.ecommerceservice.DTO.UserProfileResponse;
-import com.coraho.ecommerceservice.entity.UserAddress;
 import com.coraho.ecommerceservice.service.UserService;
 
 import jakarta.validation.Valid;
@@ -14,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,7 +52,7 @@ public class UserController {
 
     @GetMapping("/addresses")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<UserAddressResponse>> getMethodName() {
+    public ResponseEntity<List<UserAddressResponse>> getUserAddresses() {
         List<UserAddressResponse> addresses = userService.getCurrentUserAddresses();
         return ResponseEntity.ok(addresses);
     }
@@ -61,7 +61,6 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserAddressResponse> addUserAddress(@Valid @RequestBody UpdateUserAddressRequest request) {
         UserAddressResponse response = userService.addUserAddress(request);
-
         return ResponseEntity.ok(response);
     }
 
@@ -69,24 +68,22 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserAddressResponse> updateUserAddress(@PathVariable Long addressId,
             @RequestBody UpdateUserAddressRequest request) {
-        // TODO: process PUT request
-
-        return null;
+        UserAddressResponse userAddress = userService.updateUserAddress(addressId, request);
+        return ResponseEntity.ok(userAddress);
     }
 
     @DeleteMapping("addreses/{addressId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> deleteAddress(@PathVariable Long addressId) {
-        // TODO
-
-        return null;
+        userService.deleteUserAddress(addressId);
+        return ResponseEntity.ok("Address " + addressId + " deleted.");
     }
 
     @PatchMapping("addresses/{addressId}/set-default")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserAddressResponse> setDefaultAddress(@PathVariable Long addressId) {
-        // TODO
-        return null;
+        UserAddressResponse userAddress = userService.setDefaultUserAddress(addressId);
+        return ResponseEntity.ok(userAddress);
     }
 
 }
