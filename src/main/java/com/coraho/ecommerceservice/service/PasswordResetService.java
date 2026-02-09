@@ -13,7 +13,10 @@ import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,9 +58,8 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public void resetPasswordWithCurrentPassword(PasswordResetRequest request, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public void resetPasswordWithCurrentPassword(PasswordResetRequest request) {
+        User user = getCurrentAuthenticatedUser();
 
         // verify the current password is correct
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
@@ -130,7 +132,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public String resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
+    public void resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
         User user = validateTokenAndUser(request.getToken()); // Extract common logic
         log.info("Password reset token is verified successfully");
 
@@ -147,7 +149,18 @@ public class PasswordResetService {
         passwordResetTokenRepository.save(passwordResetToken);
 
         log.info("Password reset successfully for user: {}", user.getEmail());
-        return user.getEmail();
+    }
+
+    // helper methods
+    private User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new InsufficientAuthenticationException("User not logged in");
+        }
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return currentUser;
     }
 
     private void resetPassword(User user, String newPassword) {
