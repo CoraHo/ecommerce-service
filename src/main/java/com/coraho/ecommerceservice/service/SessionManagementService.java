@@ -27,8 +27,9 @@ public class SessionManagementService {
     private final UserRepository userRepository;
 
     // invalidate all sessions for a user
-    public int invalidateAllUserSessions(String email) {
-        Map<String, ? extends Session> userSessions = sessionRepository.findByPrincipalName(email);
+    public int invalidateAllUserSessions() {
+        User user = getCurrentAuthenticatedUser();
+        Map<String, ? extends Session> userSessions = sessionRepository.findByPrincipalName(user.getEmail());
 
         int count = 0;
         for (String key : userSessions.keySet()) {
@@ -44,8 +45,9 @@ public class SessionManagementService {
     }
 
     // invalidate all sessions except the current one
-    public int invalidateAllUserSessionsExceptCurrent(String email, String currentSessionId) {
-        Map<String, ? extends Session> userSessions = sessionRepository.findByPrincipalName(email);
+    public int invalidateAllUserSessionsExceptCurrent(String currentSessionId) {
+        User user = getCurrentAuthenticatedUser();
+        Map<String, ? extends Session> userSessions = sessionRepository.findByPrincipalName(user.getEmail());
 
         int count = 0;
         for (String key : userSessions.keySet()) {

@@ -4,11 +4,6 @@ import com.coraho.ecommerceservice.DTO.*;
 import com.coraho.ecommerceservice.service.*;
 import org.springframework.web.bind.annotation.*;
 
-import com.coraho.ecommerceservice.entity.RefreshToken;
-import com.coraho.ecommerceservice.entity.User;
-import com.coraho.ecommerceservice.exception.RefreshTokenException;
-import com.coraho.ecommerceservice.security.JwtService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -19,8 +14,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -72,10 +65,9 @@ public class AuthController {
     // user reset their password from forgot password request token
     @PostMapping("/reset-password-with-token")
     public ResponseEntity<String> resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
-        String email = passwordResetService.resetPasswordWithToken(request);
-
+        passwordResetService.resetPasswordWithToken(request);
         // invalidate all user sessions
-        sessionManagementService.invalidateAllUserSessions(email);
+        sessionManagementService.invalidateAllUserSessions();
         return ResponseEntity.ok("Password has been reset successfully");
     }
 
@@ -91,7 +83,6 @@ public class AuthController {
 
         String ipAddress = getCurrentIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
-
         AuthResponse authResponse = authenticationService.authenticate(loginRequest, ipAddress, userAgent);
 
         // session is automatically created and stored in database
@@ -124,9 +115,8 @@ public class AuthController {
     @PostMapping("/logout-all")
     public ResponseEntity<?> logoutAll() {
         refreshTokenService.revokeAllUserTokens();
-
         // invalidae all spring sessions for this user
-        sessionManagementService.invalidateAllUserSessions(email);
+        sessionManagementService.invalidateAllUserSessions();
 
         return ResponseEntity.status(HttpStatus.OK).body("All sesions logged out seccessfully.");
     }

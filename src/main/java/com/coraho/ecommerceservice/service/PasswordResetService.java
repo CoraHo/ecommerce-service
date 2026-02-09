@@ -132,7 +132,7 @@ public class PasswordResetService {
     }
 
     @Transactional
-    public String resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
+    public void resetPasswordWithToken(ResetPasswordWithTokenRequest request) {
         User user = validateTokenAndUser(request.getToken()); // Extract common logic
         log.info("Password reset token is verified successfully");
 
@@ -149,7 +149,6 @@ public class PasswordResetService {
         passwordResetTokenRepository.save(passwordResetToken);
 
         log.info("Password reset successfully for user: {}", user.getEmail());
-        return user.getEmail();
     }
 
     // helper methods
