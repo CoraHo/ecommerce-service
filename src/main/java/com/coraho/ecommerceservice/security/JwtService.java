@@ -24,11 +24,6 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long jwtExpirationMs;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -98,6 +93,12 @@ public class JwtService {
             log.error("JWT related error: " + e.getMessage());
             throw new JwtException("JWT related error: " + e.getMessage());
         }
+    }
+
+    // Helper methods
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     private Claims parseClaims(String token) {
