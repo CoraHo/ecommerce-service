@@ -2,6 +2,7 @@ package com.coraho.ecommerceservice.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
@@ -89,6 +90,9 @@ public class JwtService {
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: " + e.getMessage());
             throw new IllegalArgumentException("JWT claims string is empty: " + e.getMessage());
+        } catch (DecodingException e) {
+            log.error("Base64 secret key is invalud: " + e.getMessage());
+            throw new DecodingException("Base64 secret key is invalid: " + e.getMessage());
         } catch (JwtException e) {
             log.error("JWT related error: " + e.getMessage());
             throw new JwtException("JWT related error: " + e.getMessage());
