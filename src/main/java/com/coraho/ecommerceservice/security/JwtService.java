@@ -2,6 +2,7 @@ package com.coraho.ecommerceservice.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,11 +24,6 @@ public class JwtService {
     private String secretKey;
     @Value("${security.jwt.expiration-time}")
     private long jwtExpirationMs;
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
 
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -94,10 +90,19 @@ public class JwtService {
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: " + e.getMessage());
             throw new IllegalArgumentException("JWT claims string is empty: " + e.getMessage());
+        } catch (DecodingException e) {
+            log.error("Base64 secret key is invalud: " + e.getMessage());
+            throw new DecodingException("Base64 secret key is invalid: " + e.getMessage());
         } catch (JwtException e) {
             log.error("JWT related error: " + e.getMessage());
             throw new JwtException("JWT related error: " + e.getMessage());
         }
+    }
+
+    // Helper methods
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     private Claims parseClaims(String token) {
