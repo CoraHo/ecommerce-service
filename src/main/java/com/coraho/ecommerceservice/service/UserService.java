@@ -34,17 +34,12 @@ public class UserService {
     private final EmailVerificationTokenService emailVerificationTokenService;
     private final UserAddressRepository userAddressRepository;
 
-    public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
-
-    public User findUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found by username: " + username));
-
-        return user;
-    }
-
+    /**
+     * Get the user profile for the current logged in user
+     * 
+     * @return UserProfileResponse includes user basic information and address
+     *         information
+     */
     public UserProfileResponse getCurrentUserProfile() {
         User user = getCurrentAuthenticatedUser();
         return mapToUserProfileResponse(user);
