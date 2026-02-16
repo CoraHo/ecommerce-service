@@ -201,7 +201,7 @@ public class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         // When
-        UserProfileResponse response = userService.updateUserProfile(request);
+        userService.updateUserProfile(request);
 
         // Then
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -255,7 +255,7 @@ public class UserServiceTest {
         doNothing().when(emailVerificationTokenService).createAndSendEmailVerificationToken(any(User.class));
 
         // When
-        UserProfileResponse response = userService.updateUserProfile(request);
+        userService.updateUserProfile(request);
 
         // Then
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -387,7 +387,7 @@ public class UserServiceTest {
         when(userAddressRepository.save(any(UserAddress.class))).thenReturn(savedAddress);
 
         // When
-        UserAddressResponse response = userService.addUserAddress(request);
+        userService.addUserAddress(request);
 
         // Then
         ArgumentCaptor<UserAddress> addressCaptor = ArgumentCaptor.forClass(UserAddress.class);
@@ -455,7 +455,7 @@ public class UserServiceTest {
         doNothing().when(userAddressRepository).clearDefaultAddresses(TEST_USER_ID);
 
         // When
-        UserAddressResponse response = userService.updateUserAddress(addressId, request);
+        userService.updateUserAddress(addressId, request);
 
         // Then
         verify(userAddressRepository, times(1)).clearDefaultAddresses(TEST_USER_ID);
