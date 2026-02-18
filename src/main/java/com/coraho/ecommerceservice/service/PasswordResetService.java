@@ -52,11 +52,6 @@ public class PasswordResetService {
     @Value("${app.email.base-url}")
     private String emailBaseUrl;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(passwordResetTokenSecretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
     @Transactional
     public void resetPasswordWithCurrentPassword(PasswordResetRequest request) {
         User user = getCurrentAuthenticatedUser();
@@ -152,6 +147,12 @@ public class PasswordResetService {
     }
 
     // helper methods
+
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(passwordResetTokenSecretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
     private User getCurrentAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
