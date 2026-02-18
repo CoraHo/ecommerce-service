@@ -115,7 +115,7 @@ public class RefreshTokenServiceTest {
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        RefreshToken result = refreshTokenService.createRefreshToken(TEST_USER_ID, TEST_IP_ADDRESS, TEST_USER_AGENT);
+        refreshTokenService.createRefreshToken(TEST_USER_ID, TEST_IP_ADDRESS, TEST_USER_AGENT);
 
         // Then
         ArgumentCaptor<RefreshToken> tokenCaptor = ArgumentCaptor.forClass(RefreshToken.class);
