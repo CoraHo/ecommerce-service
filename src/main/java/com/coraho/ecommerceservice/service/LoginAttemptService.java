@@ -150,7 +150,7 @@ public class LoginAttemptService {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            return false;
+            return true;
         }
         User user = userOpt.get();
 
@@ -164,9 +164,10 @@ public class LoginAttemptService {
                 log.info("User account unlocked: {}", email);
                 return false;
             }
+            return true;
         }
 
-        return true;
+        return false;
 
     }
 
