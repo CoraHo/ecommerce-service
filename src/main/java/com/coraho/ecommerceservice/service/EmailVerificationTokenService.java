@@ -46,11 +46,6 @@ public class EmailVerificationTokenService {
     @Value("${app.email.secret-key}")
     private String emailVerificationTokenSecretKey;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(emailVerificationTokenSecretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
     // For the first request and following requests after validation
     @Transactional
     public void createAndSendEmailVerificationToken(User user) {
@@ -146,6 +141,11 @@ public class EmailVerificationTokenService {
     }
 
     // helper methods
+
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(emailVerificationTokenSecretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
     private User getCurrentAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
