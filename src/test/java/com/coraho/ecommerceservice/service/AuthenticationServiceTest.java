@@ -1,4 +1,4 @@
-package com.coraho.ecommerceservice.security;
+package com.coraho.ecommerceservice.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -39,9 +39,7 @@ import com.coraho.ecommerceservice.DTO.RegisterResponse;
 import com.coraho.ecommerceservice.entity.RefreshToken;
 import com.coraho.ecommerceservice.entity.User;
 import com.coraho.ecommerceservice.repository.UserRepository;
-import com.coraho.ecommerceservice.service.AuthenticationService;
-import com.coraho.ecommerceservice.service.EmailVerificationTokenService;
-import com.coraho.ecommerceservice.service.RefreshTokenService;
+import com.coraho.ecommerceservice.security.JwtService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthenticationService Test")
