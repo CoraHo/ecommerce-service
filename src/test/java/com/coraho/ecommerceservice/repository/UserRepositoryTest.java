@@ -18,6 +18,7 @@ import com.coraho.ecommerceservice.entity.UserRole;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+@DisplayName("UserRepository Tests")
 public class UserRepositoryTest {
 
     @Autowired
