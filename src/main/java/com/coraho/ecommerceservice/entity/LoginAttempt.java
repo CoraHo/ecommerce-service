@@ -46,6 +46,20 @@ public class LoginAttempt {
     private LocalDateTime attemptedAt;
 
     public enum AttemptResult {
-        SUCCESS, FAILED, BLOCKED
+        SUCCESS("SUCCESS"),
+        FAILED("FAILED"),
+        BLOCKED("BLOCKED");
+
+        private final String value;
+
+        // Constructor
+        AttemptResult(String value) {
+            this.value = value;
+        }
+
+        // Getter
+        public String getValue() {
+            return value;
+        }
     }
 }
