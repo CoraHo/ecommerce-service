@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 @Builder
 public class EmailVerificationToken {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
