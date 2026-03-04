@@ -31,6 +31,41 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request, HttpSession session) {
+
+        String ipAddress = getCurrentIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        AuthResponse authResponse = authenticationService.authenticate(loginRequest, ipAddress, userAgent);
+
+        // session is automatically created and stored in database
+        session.setAttribute("user", authResponse.getEmail());
+        session.setAttribute("loginTime", LocalDateTime.now());
+
+        authResponse.setSessionId(session.getId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
+    }
+
+    @PostMapping("/log-out")
+    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest, HttpSession session) {
+        refreshTokenService.revokeToken(refreshTokenRequest.getRefreshToken());
+        // session remvoed from database
+        session.invalidate();
+        return ResponseEntity.status(HttpStatus.OK).body("Logout successfully.");
+    }
+
+    // log out all for the current user
+    @PostMapping("/logout-all")
+    public ResponseEntity<?> logoutAll() {
+        refreshTokenService.revokeAllUserTokens();
+        // invalidae all spring sessions for this user
+        sessionManagementService.invalidateAllUserSessions();
+
+        return ResponseEntity.status(HttpStatus.OK).body("All sesions logged out seccessfully.");
+    }
+
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {
         emailVerificationTokenService.verifyEmail(token);
@@ -77,23 +112,6 @@ public class AuthController {
         return ResponseEntity.ok("Verification email sent successfully");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody LoginRequest loginRequest,
-            HttpServletRequest request, HttpSession session) {
-
-        String ipAddress = getCurrentIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        AuthResponse authResponse = authenticationService.authenticate(loginRequest, ipAddress, userAgent);
-
-        // session is automatically created and stored in database
-        session.setAttribute("user", authResponse.getEmail());
-        session.setAttribute("loginTime", LocalDateTime.now());
-
-        authResponse.setSessionId(session.getId());
-
-        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
-    }
-
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         // Get the refresh token
@@ -101,24 +119,6 @@ public class AuthController {
         // Generate a new JWT access token based on the refresh token
         AuthResponse response = refreshTokenService.refreshAccessToken(requestRefreshToken);
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/log-out")
-    public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest, HttpSession session) {
-        refreshTokenService.revokeToken(refreshTokenRequest.getRefreshToken());
-        // session remvoed from database
-        session.invalidate();
-        return ResponseEntity.status(HttpStatus.OK).body("Logout successfully.");
-    }
-
-    // log out all for the current user
-    @PostMapping("/logout-all")
-    public ResponseEntity<?> logoutAll() {
-        refreshTokenService.revokeAllUserTokens();
-        // invalidae all spring sessions for this user
-        sessionManagementService.invalidateAllUserSessions();
-
-        return ResponseEntity.status(HttpStatus.OK).body("All sesions logged out seccessfully.");
     }
 
     @GetMapping("/session-info")
