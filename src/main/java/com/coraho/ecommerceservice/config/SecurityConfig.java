@@ -86,9 +86,8 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl("/login?expired=true"))
                 .authenticationProvider(authenticationProvider())
-                // add JWT filter
-                // should not use httpBasic for JWT authentication, since httpBasic is for
-                // username.password authentication in every request
+                // add LoginAttempt filter and JWT filter before
+                // UsernamePasswordAuthenticationFilter
                 .addFilterBefore(loginAttemptFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
