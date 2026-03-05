@@ -48,7 +48,7 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
             return;
         }
 
-        // TO-DO Check if user is locked and the remaning locked time
+        // Check if user is locked and the remaning locked time
         String email = extractEmailFromRequest(request);
 
         if (email != null && loginAttemptService.isUserLocked(email)) {
@@ -66,9 +66,7 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         String method = request.getMethod();
 
-        return "POST".equalsIgnoreCase(method) && (requestURI.contains("/login") ||
-                requestURI.contains("/auth/login") ||
-                requestURI.contains("/api/auth/login"));
+        return "POST".equalsIgnoreCase(method) && "api/auth/login".equals(requestURI);
     }
 
     /* Extract IP address handling proxies and load balancers */

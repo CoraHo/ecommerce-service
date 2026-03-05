@@ -21,14 +21,7 @@ import com.coraho.ecommerceservice.DTO.UpdateProfileRequest;
 import com.coraho.ecommerceservice.DTO.UpdateUserAddressRequest;
 import com.coraho.ecommerceservice.DTO.UserAddressResponse;
 import com.coraho.ecommerceservice.DTO.UserProfileResponse;
-import com.coraho.ecommerceservice.config.RateLimitConfig;
 import com.coraho.ecommerceservice.entity.UserAddress.AddressType;
-import com.coraho.ecommerceservice.repository.UserRepository;
-import com.coraho.ecommerceservice.security.CustomUserDetailsService;
-import com.coraho.ecommerceservice.security.JwtAuthenticationFilter;
-import com.coraho.ecommerceservice.security.JwtService;
-import com.coraho.ecommerceservice.security.RateLimitInterceptor;
-import com.coraho.ecommerceservice.service.LoginAttemptService;
 import com.coraho.ecommerceservice.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,18 +37,6 @@ public class UserControllerTest {
 
         @MockitoBean
         private UserService userService;
-        @MockitoBean
-        private RateLimitInterceptor rateLimitInterceptor;
-        // @MockitoBean
-        // private JwtAuthenticationFilter jwtAuthenticationFilter;
-        // @MockitoBean
-        // private JwtService jwtService;
-        // @MockitoBean
-        // private CustomUserDetailsService customUserDetailsService;
-        // @MockitoBean
-        // private UserRepository userRepository;
-        // @MockitoBean
-        // private LoginAttemptService loginAttemptService;
 
         private UserProfileResponse profileResponse;
         private UserAddressResponse addressResponse;
